@@ -10,4 +10,6 @@ public interface AppointmentRepository
         extends JpaRepository<Appointment, Integer> {
 
     boolean existsByPatientId(int patientId);
+
+    boolean existsByDoctorId(int doctorId);
 }
