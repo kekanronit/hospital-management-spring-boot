@@ -2,8 +2,9 @@ package com.example.hospital_management.controller;
 
 import com.example.hospital_management.entity.Appointment;
 import com.example.hospital_management.service.AppointmentService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -20,4 +21,16 @@ public class AppointmentController {
     public List<Appointment> getAllAppointments() {
         return appointmentService.getAllAppointments();
     }
+
+    @GetMapping("/appointments/{id}")
+    public Appointment getAppointmentById(@PathVariable int id) {
+        return appointmentService.getAppointmentById(id);
+    }
+
+    @PostMapping("/appointments")
+    public Appointment addAppointment(@RequestBody Appointment appointment){
+        return appointmentService.addAppointment(appointment);
+    }
+
+
 }
