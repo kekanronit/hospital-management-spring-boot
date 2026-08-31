@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -99,4 +100,115 @@ public class AppointmentService {
 
         return appointmentRepository.save(appointment);
     }
-}
+
+    public Appointment cancelAppointment(int id){
+
+        Appointment appointment = appointmentRepository.findById(id).orElse(null);
+
+        if(appointment == null){
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Appointment not found"
+            );
+        }
+
+        if (appointment.getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Appointment is already cancelled"
+            );
+        }
+
+        appointment.setStatus("CANCELLED");
+
+        return appointmentRepository.save(appointment);
+    }
+    public Appointment rescheduleAppointment(int id, LocalDate newDate , LocalTime newTime){
+        Appointment appointment = appointmentRepository.findById(id).orElseThrow(()-> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Appointment not found"
+        ));
+
+        if (appointment.getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cancel Appointment cannot be rescheduled"
+            );
+        }
+
+        String dayOfWeek = newDate.getDayOfWeek()
+                .toString();
+
+        dayOfWeek = dayOfWeek.substring(0, 1)
+                + dayOfWeek.substring(1).toLowerCase();
+
+        boolean doctorAvailable =
+                doctorAvailabilityRepository
+                        .existsByDoctorIdAndDayOfWeekAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+                                appointment.getDoctorId(),
+                                dayOfWeek,
+                                newTime,
+                                newTime
+                        );
+
+        if (!doctorAvailable) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Doctor is not available at this time"
+            );
+        }
+
+        boolean alreadyBooked =
+                appointmentRepository
+                        .existsByDoctorIdAndAppointmentDateAndAppointmentTime(
+                                appointment.getDoctorId(),
+                                newDate,
+                                newTime
+                        );
+
+        if (alreadyBooked) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Doctor already has an appointment at this time"
+            );
+        }
+
+        appointment.setAppointmentDate(newDate);
+        appointment.setAppointmentTime(newTime);
+
+        return appointmentRepository.save(appointment);
+    }
+
+    public List<Appointment> getAppointmentsByPatientId(int patientId) {
+        return appointmentRepository.findByPatientId(patientId);
+    }
+
+    public Appointment updateStatus(int id, String status){
+        Appointment appointment = appointmentRepository.findById(id).orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Appointment not found"
+        ));
+
+        if (!status.equalsIgnoreCase("SCHEDULED") && !status.equalsIgnoreCase("COMPLETED") &&  !status.equalsIgnoreCase("CANCELLED")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid appointment status "
+            );
+        }
+
+        if (appointment.getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cancelled appointment status cannot be changed"
+            );
+        }
+
+        appointment.setStatus(status);
+
+        return appointmentRepository.save(appointment);
+    }
+
+
+    }
+
+
