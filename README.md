@@ -1,8 +1,8 @@
 # 🏥 Hospital Management System — Spring Boot
 
-A backend-based **Hospital Management System** built using **Java, Spring Boot, Spring Data JPA, Hibernate, and MySQL**.
+A backend-based **Hospital Management System** built using **Java, Spring Boot, Spring Data JPA, Hibernate, Spring Security, JWT, and MySQL**.
 
-The project is being developed step-by-step by converting the original Java console-based Hospital Management System into a **RESTful Spring Boot application**.
+The project is being developed step-by-step by converting the original Java console-based Hospital Management System into a **secure RESTful Spring Boot application**.
 
 ---
 
@@ -49,6 +49,76 @@ The project is being developed step-by-step by converting the original Java cons
 * Cancel appointments
 * Reschedule appointments
 * Manage appointment status
+
+#### 5. Authentication & Authorization 🔐
+
+* User registration
+* User login
+* BCrypt password encryption
+* Password verification
+* JWT token generation
+* JWT token validation
+* JWT authentication filter
+* Stateless authentication
+* Role-Based Authorization
+* Protected REST APIs
+* Admin / Doctor / Patient roles
+* Role-based endpoint access
+* Tested authorized and unauthorized API access using Postman
+
+---
+
+## 🔐 Security & Authorization
+
+The application uses **Spring Security + JWT** to secure REST APIs.
+
+### User Roles
+
+```text
+ADMIN
+DOCTOR
+PATIENT
+```
+
+### Role-Based Access
+
+| Role    | Access                                                             |
+| ------- | ------------------------------------------------------------------ |
+| ADMIN   | Patient and Doctor management                                      |
+| DOCTOR  | View patients, doctors, appointments and update appointment status |
+| PATIENT | View patient information, doctors and manage own appointments      |
+
+Unauthorized users receive:
+
+```text
+403 Forbidden
+```
+
+when they attempt to access an endpoint without the required role.
+
+### Authentication Flow
+
+```text
+User Registration
+       ↓
+Password Encryption (BCrypt)
+       ↓
+User Login
+       ↓
+Credentials Verification
+       ↓
+JWT Token Generation
+       ↓
+Client sends Bearer Token
+       ↓
+JWT Authentication Filter
+       ↓
+Extract Username + Role
+       ↓
+Spring Security Authorization
+       ↓
+Allow / Deny Request
+```
 
 ---
 
@@ -101,10 +171,19 @@ Appointment status management currently supports:
 * REST API
 * Spring Data JPA
 * Hibernate
+* Spring Security
+* JWT
 
 ### Database
 
 * MySQL
+
+### Security
+
+* BCrypt Password Encryption
+* JWT Authentication
+* Role-Based Authorization
+* Stateless Session Management
 
 ### Tools
 
@@ -121,34 +200,56 @@ Appointment status management currently supports:
 ```text
 src/main/java/com/example/hospital_management
 │
+├── config
+│   └── SecurityConfig.java
+│
 ├── controller
 │   ├── Patientcontroller.java
 │   ├── DoctorController.java
 │   ├── DoctorAvailabilityController.java
-│   └── AppointmentController.java
+│   ├── AppointmentController.java
+│   └── UserController.java
+│
+├── dto
+│   ├── LoginRequest.java
+│   └── LoginResponse.java
 │
 ├── entity
 │   ├── Patient.java
 │   ├── Doctor.java
 │   ├── DoctorAvailability.java
-│   └── Appointment.java
+│   ├── Appointment.java
+│   └── User.java
 │
 ├── repository
 │   ├── PatientRepository.java
 │   ├── DoctorRepository.java
 │   ├── DoctorAvailabilityRepository.java
-│   └── AppointmentRepository.java
+│   ├── AppointmentRepository.java
+│   └── UserRepository.java
+│
+├── security
+│   └── JwtAuthenticationFilter.java
 │
 └── service
     ├── PatientService.java
     ├── DoctorService.java
     ├── DoctorAvailabilityService.java
-    └── AppointmentService.java
+    ├── AppointmentService.java
+    ├── UserService.java
+    └── JwtService.java
 ```
 
 ---
 
 ## 📌 REST API Endpoints
+
+### 🔐 Authentication
+
+```text
+POST    /users/register
+POST    /users/login
+```
 
 ### Patient
 
@@ -167,6 +268,7 @@ GET     /doctors
 GET     /doctors/{id}
 POST    /doctors
 PUT     /doctors/{id}
+DELETE  /doctors/{id}
 ```
 
 ### Doctor Availability
@@ -193,30 +295,41 @@ PUT     /appointments/{id}/status
 
 ---
 
-## 🔐 Upcoming Module
+## 🧪 API Security Testing
 
-### Authentication & Authorization
+The authentication and authorization system has been tested using **Postman**.
 
-The next phase of the project will focus on authentication and security.
+### Patient
 
-Planned features:
+```text
+PATIENT → GET /patients/{id}       ✅ 200 OK
+PATIENT → POST /patients           ❌ 403 Forbidden
+```
 
-* User Entity
-* User Registration
-* User Repository
-* Password Encryption
-* Login
-* Spring Security
-* JWT Authentication
-* Role-Based Authorization
-* Admin / Doctor / Patient roles
+### Admin
+
+```text
+ADMIN → POST /patients             ✅ 200 OK
+```
+
+### Doctor
+
+```text
+DOCTOR → GET /patients             ✅ 200 OK
+DOCTOR → POST /patients            ❌ 403 Forbidden
+DOCTOR → GET /appointments/{id}    ✅ 200 OK
+DOCTOR → PUT /appointments/{id}/status  ✅ Authorized
+```
+
+This confirms that the application's role-based authorization is working as expected.
 
 ---
 
 ## 🎯 Project Goal
 
-The goal of this project is to build a complete **RESTful Hospital Management System** while gaining practical experience with:
+The goal of this project is to build a complete **secure RESTful Hospital Management System** while gaining practical experience with:
 
+* Core Java
 * Spring Boot
 * REST API development
 * Spring Data JPA
@@ -224,15 +337,16 @@ The goal of this project is to build a complete **RESTful Hospital Management Sy
 * MySQL
 * API validation
 * Exception handling
-* Authentication & Authorization
-* JWT
+* Spring Security
+* JWT Authentication
+* Role-Based Authorization
 * Backend application architecture
 
 ---
 
 ## 📈 Development Approach
 
-This project is being developed incrementally by converting functionality from a **Java + JDBC console application** into a modern **Spring Boot REST API**.
+This project is being developed incrementally by converting functionality from a **Java + JDBC console application** into a modern Spring Boot REST API.
 
 ```text
 Java Console Application
@@ -245,10 +359,30 @@ Java Console Application
           ↓
     Spring Data JPA
           ↓
+       Validation
+          ↓
    Authentication
           ↓
-      JWT Security
+    Spring Security
+          ↓
+   JWT Authentication
+          ↓
+ Role-Based Authorization
 ```
+
+---
+
+## 🔮 Next Steps
+
+Planned improvements include:
+
+* Global Exception Handling using `@ControllerAdvice`
+* Improve API response structure using DTOs
+* Improve validation and error responses
+* API documentation using Swagger / OpenAPI
+* Improve database relationships and constraints
+* Unit and integration testing
+* Final project cleanup and documentation
 
 ---
 
@@ -256,4 +390,4 @@ Java Console Application
 
 **Ronit Kekan**
 
-Built as a hands-on project to strengthen Java, Spring Boot, REST API, database, and backend development skills.
+Built as a hands-on project to strengthen Java, Spring Boot, REST API, database, security, and backend development skills.
