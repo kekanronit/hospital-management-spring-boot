@@ -1,5 +1,6 @@
 package com.example.hospital_management.service;
 
+import com.example.hospital_management.dto.LoginResponse;
 import com.example.hospital_management.entity.User;
 import com.example.hospital_management.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,11 +12,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository ,  PasswordEncoder passwordEncoder) {
+
+    public UserService(UserRepository userRepository ,  PasswordEncoder passwordEncoder ,  JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
+
 
     public User registerUser(User user){
 
@@ -33,9 +38,7 @@ public class UserService {
 
     }
 
-    public User loginUser(String username, String password) {
-
-        System.out.println("Login username = " + username);
+    public LoginResponse loginUser(String username, String password) {
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Username not found"));
@@ -44,6 +47,22 @@ public class UserService {
             throw new RuntimeException("Invalid username or password");
         }
 
-        return user;
+        String token = jwtService.generateToken(
+                user.getUsername(),
+                user.getRole()
+        );
+
+        return new LoginResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                token
+        );
     }
-}
+    }
+
+
+
+
+

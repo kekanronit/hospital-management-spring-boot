@@ -70,7 +70,7 @@ public class User {
         return role;
     }
 
-    public void setRole(){
+    public void setRole(String role){
         this.role = role;
     }
 

@@ -1,6 +1,7 @@
 package com.example.hospital_management.controller;
 
 import com.example.hospital_management.dto.LoginRequest;
+import com.example.hospital_management.dto.LoginResponse;
 import com.example.hospital_management.entity.User;
 import com.example.hospital_management.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public User loginUser(@RequestBody LoginRequest loginRequest) {
+    public LoginResponse loginUser(@RequestBody LoginRequest loginRequest) {
 
         return userService.loginUser(
                 loginRequest.getUsername(),
